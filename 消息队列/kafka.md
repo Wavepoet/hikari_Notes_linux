@@ -94,16 +94,23 @@ docker安装kafka：
 ```bash
 mkdir docker-compose-yml
 cd docker-compose-yml
-mkdir docker-compose.yml
+vim docker-compose.yml
 ``` 
 
 编辑docker-compose.yml文件
-```bash
-vim docker-compose.yml
-```
-
-复制下面的内容
+复制下面的内容，kafka数量可以更具自己定,改IP地址！！！！！！！！！！！！
 ```yaml
+version: '2'
+services:
+  zookeeper:
+    image: zookeeper:latest
+    ports:
+      - "2181:2181"
+
+  kafka1:
+    image: wurstmeister/kafka:latest
+    ports:
+      - "9092:9092"
     environment:
       KAFKA_BROKER_ID: 1
       KAFKA_ZOOKEEPER_CONNECT: 192.168.24.170:2181
@@ -155,6 +162,7 @@ vim docker-compose.yml
       - kafka2
       - kafka3
       - zookeeper
+
 ```
 在我问AI是总是叫拉取bitnami/kafka，但由于VMware收购bitnami，将其划分为了免费版和商业版的原因。docker hub上已经没有这个镜像了。然后就是wurstmeister/zookeeper，我是怎么启动都启动不了啊。
 
@@ -295,3 +303,29 @@ docker exec -it kafka kafka-configs.sh \
 --config retention.ms
 ```
 
+## 远程集群的连接
+想要远程连接到kafka集群，需要在启动kafka容器时，配置``KAFKA_ADVERTISED_LISTENERS``环境变量，指定外部访问的地址和端口。
+按照上面的yml文件大概改成这样
+
+```yaml
+  kafka1:
+    image: wurstmeister/kafka:latest
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: 192.168.24.169:2181
+      #指定外部访问的地址和端口
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://192.168.24.69:9092,INTERNAL://192.168.24.69:29092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,INTERNAL:PLAINTEXT
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092,INTERNAL://0.0.0.0:29092
+      #就修改了3段
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+```
+
+
+
+
+## 将 Nginx 与 Kafka 关联起来
