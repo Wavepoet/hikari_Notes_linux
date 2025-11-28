@@ -43,11 +43,91 @@ D[服务A] -->E[消息队列（缓存：10000条）]--发送消息10000条--> F[
 
 docker安装kafka：
 
-[kafka集群部署 - 利用docker-compose 进行集群部署-腾讯云开发者社区-腾讯云](https://cloud.tencent.com/developer/article/2475950)
+找一个空的目录创建,创建docker-compose.yml文件
+```bash
+mkdir docker-compose-yml
+cd docker-compose-yml
+mkdir docker-compose.yml
+``` 
+
+编辑docker-compose.yml文件
+```bash
+vim docker-compose.yml
+```
+
+复制下面的内容
+```yaml
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: 192.168.24.170:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://192.168.24.170:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+
+  kafka2:
+    image: wurstmeister/kafka:latest
+    ports:
+      - "9093:9093"
+    environment:
+      KAFKA_BROKER_ID: 2
+      KAFKA_ZOOKEEPER_CONNECT: 192.168.24.170:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://192.168.24.170:9093
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9093
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+
+  kafka3:
+    image: wurstmeister/kafka:latest
+    ports:
+      - "9094:9094"
+    environment:
+      KAFKA_BROKER_ID: 3
+      KAFKA_ZOOKEEPER_CONNECT: 192.168.24.170:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://192.168.24.170:9094
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9094
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+
+  kafka-ui:
+    image: provectuslabs/kafka-ui:latest
+    ports:
+      - "18080:8080"
+    environment:
+      KAFKA_CLUSTERS_0_NAME: "local"
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: "192.168.24.170:9092,192.168.24.170:9093,192.168.24.170:9094"
+      KAFKA_CLUSTERS_0_ZOOKEEPER: "192.168.24.170:2181"
+    depends_on:
+      - kafka1
+      - kafka2
+      - kafka3
+      - zookeeper
+```
+在我问AI是总是叫拉取bitnami/kafka，但由于VMware收购bitnami，将其划分为了免费版和商业版的原因。docker hub上已经没有这个镜像了。然后就是wurstmeister/zookeeper，我是怎么启动都启动不了啊。
+
+回到正题，
+推荐先下载镜像docker-compose
+```bash
+docker pull zookeeper:latest
+docker pull wurstmeister/kafka:latest
+docker pull provectuslabs/kafka-ui:latest
+```
+然后启动docker-compose
+```bash
+docker-compose up -d
+```
+启动后，访问http://localhost:18080/，即可看到kafka-ui管理界面。
+
 
 ---
-## kafka的web的使用
-docker安装的kafka自带一个web。使用浏览器访问http://localhost:<映射端口>/即可。
-
+## kafka-ui的使用
+进入kafka-iu的管理界面如下
 ![](kafka_image/image1.png)
+
 
