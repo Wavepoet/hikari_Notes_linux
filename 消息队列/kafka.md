@@ -325,7 +325,19 @@ docker exec -it kafka kafka-configs.sh \
       - /var/run/docker.sock:/var/run/docker.sock
 ```
 
+```bash
+version: '3'
+services:
+  kafka-ui:
+    container_name: kafka-ui
+    image: provectuslabs/kafka-ui:latest
+    ports:
+      - 8080:8080
+    environment:
+      - KAFKA_CLUSTERS_0_NAME=SpringBreeze-Cluster
+      # 【关键】这里要填入 Kafka 服务器(.169) 的 IP 和三个外部端口
+      # 中间用逗号分隔
+      - KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS=192.168.24.169:9092,192.168.24.169:9093,192.168.24.169:9094
+      - KAFKA_CLUSTERS_0_ZOOKEEPER=192.168.24.169:2181
+```
 
-
-
-## 将 Nginx 与 Kafka 关联起来
