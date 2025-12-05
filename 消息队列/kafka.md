@@ -187,7 +187,7 @@ docker pull provectuslabs/kafka-ui:latest
 docker-compose up -d
 ```
 
-启动后，访问http://localhost:18080/，即可看到kafka-ui管理界面。
+启动后，访问``http://localhost:18080/``，即可看到kafka-ui管理界面。
 
 ---
 
@@ -195,7 +195,7 @@ docker-compose up -d
 
 可以使用kafka-ui管理kafka集群，进入kafka-iu的管理界面如下
 
-![](kafka_image/image1.png)
+![图片显示错误](kafka_image/image1.png)
 
 仪表盘可以看到kafka集群的整体情况，包括broker的数量、topic的数量、消息的数量等。
 
@@ -328,7 +328,7 @@ docker exec -it kafka kafka-configs.sh \
 
 ## 远程集群的连接
 
-想要远程连接到kafka集群，需要在启动kafka容器时，配置``KAFKA_ADVERTISED_LISTENERS``环境变量，指定外部访问的地址和端口。
+想要远程连接到kafka集群，远程设备上需要在``docker-compose.yml`` 文件中配置``KAFKA_ADVERTISED_LISTENERS``环境变量，指定外部访问的地址和端口。
 按照上面的yml文件大概改成这样
 
 ```yaml
@@ -343,24 +343,36 @@ docker exec -it kafka kafka-configs.sh \
       KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://192.168.24.69:9092,INTERNAL://192.168.24.69:29092
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,INTERNAL:PLAINTEXT
       KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092,INTERNAL://0.0.0.0:29092
-      #就修改了3段
+      #修改的内容到就这里
       KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
 ```
 
+使用kafka-ui管理远程kafka集群，同时还需要在本地设备上修改``docker-compose.yml`` 文件，将``kafka-ui``的端口映射到本地的端口。并允许外部连接。
+
 ```bash
-version: '3'
-services:
   kafka-ui:
     container_name: kafka-ui
     image: provectuslabs/kafka-ui:latest
     ports:
-      - 8080:8080
+      - 18080:8080
     environment:
-      - KAFKA_CLUSTERS_0_NAME=SpringBreeze-Cluster
-      # 【关键】这里要填入 Kafka 服务器(.169) 的 IP 和三个外部端口
-      # 中间用逗号分隔
-      - KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS=192.168.24.169:9092,192.168.24.169:9093,192.168.24.169:9094
-      - KAFKA_CLUSTERS_0_ZOOKEEPER=192.168.24.169:2181
+      # --- 集群 0: 本地集群 (192.168.24.170) ---
+      - KAFKA_CLUSTERS_0_NAME=Local-Cluster-170
+      # 假设本地集群也有3个节点，如果只有一个，填一个即可
+      - KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS=192.168.24.170:9092,192.168.24.170:9093,192.168.24.170:9094
+      - KAFKA_CLUSTERS_0_ZOOKEEPER=192.168.24.170:2181
+
+      # --- 集群 1: 远程集群 (192.168.24.169) ---
+      - KAFKA_CLUSTERS_1_NAME=Remote-Cluster-169
+      # 指向远程机器的 IP 和端口
+      - KAFKA_CLUSTERS_1_BOOTSTRAPSERVERS=192.168.24.169:9092,192.168.24.169:9093,192.168.24.169:9094
+      - KAFKA_CLUSTERS_1_ZOOKEEPER=192.168.24.169:2181
+      
+      # 开启动态配置功能（可选）
+      - DYNAMIC_CONFIG_ENABLED=true
 ```
+
+启动完成后进入``http://localhost:18080/``可以看到两个集群。
+![图片显示错误](kafka_image/image2.png)哇
