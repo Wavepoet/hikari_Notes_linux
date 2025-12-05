@@ -1,3 +1,7 @@
+<!-- markdownlint-disable MD046 -->
+
+# Kafka
+
 Kafka是一个消息队列，主要用于：
 
 - 日志收集（Log aggregation）
@@ -31,6 +35,7 @@ D[服务A] -->E[消息队列（缓存：10000条）]--发送消息10000条--> F[
 此时服务B即使发生错误重启，在消息队列中的消息也不会消失。消息队列一般都拥有很强的防重启手段，例如持久化存储。不容易发生错误重启，即使重启也可以读取回重启前的数据。
 
 ## Kafka中的的术语
+
 - **Broker (代理)：** 一台 Kafka 服务器。
 - **Topic (主题)：** 消息的类别或“源”。您可以将其视为数据库中的一个表。
 - **Partition (分区)：** Topic 可以被分成多个分区，这是 Kafka 实现高吞吐量和并行处理的关键。
@@ -81,7 +86,6 @@ graph LR
     %% 关联解释线
     Topic_Logical -. "逻辑上包含" .-> P0
     Topic_Logical -. "逻辑上包含" .-> P1
-
 ```
 
 ---
@@ -91,14 +95,16 @@ graph LR
 docker安装kafka：
 
 找一个空的目录创建,创建docker-compose.yml文件
+
 ```bash
 mkdir docker-compose-yml
 cd docker-compose-yml
 vim docker-compose.yml
-``` 
+```
 
 编辑docker-compose.yml文件
 复制下面的内容，kafka数量可以更具自己定,改IP地址！！！！！！！！！！！！
+
 ```yaml
 version: '2'
 services:
@@ -162,26 +168,31 @@ services:
       - kafka2
       - kafka3
       - zookeeper
-
 ```
+
 在我问AI是总是叫拉取bitnami/kafka，但由于VMware收购bitnami，将其划分为了免费版和商业版的原因。docker hub上已经没有这个镜像了。然后就是wurstmeister/zookeeper，我是怎么启动都启动不了啊。
 
 回到正题，
 推荐先下载镜像docker-compose
+
 ```bash
 docker pull zookeeper:latest
 docker pull wurstmeister/kafka:latest
 docker pull provectuslabs/kafka-ui:latest
 ```
+
 然后启动docker-compose
+
 ```bash
 docker-compose up -d
 ```
+
 启动后，访问http://localhost:18080/，即可看到kafka-ui管理界面。
 
-
 ---
+
 ## kafka的使用
+
 可以使用kafka-ui管理kafka集群，进入kafka-iu的管理界面如下
 
 ![](kafka_image/image1.png)
@@ -198,9 +209,11 @@ kafka-ui的界面已经十分简洁明了，这里就不过多介绍了。
 ``--bootstrap-server``选项指定kafka集群的地址。
 
 ### Topic管理
+
 使用``kafka-topics.sh``命令可以对Topic进行管理。
 
 ``--create``选项可以创建一个Topic,
+
 ```bash
 docker exec -it  <kafka的容器ID/名>   kafka-topics.sh \
 --create \
@@ -211,6 +224,7 @@ docker exec -it  <kafka的容器ID/名>   kafka-topics.sh \
 ```
 
 ``--list``选项可以查看kafka中已有的Topics
+
 ```bash
 docker exec -it  <kafka的容器ID/名>   kafka-topics.sh \
 --list \
@@ -218,6 +232,7 @@ docker exec -it  <kafka的容器ID/名>   kafka-topics.sh \
 ```
 
 ``--describe`` 选项可以查看 Topic 详细信息
+
 ```bash
 docker exec -it  <kafka的容器ID/名>   kafka-topics.sh \
 --describe \
@@ -226,6 +241,7 @@ docker exec -it  <kafka的容器ID/名>   kafka-topics.sh \
 ```
 
 ```--delete`` 选项可以删除 Topic
+
 ```bash
 docker exec -it  <kafka的容器ID/名> kafka-topics.sh \
 --delete \
@@ -234,9 +250,11 @@ docker exec -it  <kafka的容器ID/名> kafka-topics.sh \
 ```
 
 ### 消息管理
+
 使用``kafka-console-producer.sh``命令可以向Topic发布消息。
 
 ``--list``选项可以查看当前活跃的消费者
+
 ```bash
 docker exec -it <kafka的容器ID/名> kafka-consumer-groups.sh \
  --list \
@@ -244,6 +262,7 @@ docker exec -it <kafka的容器ID/名> kafka-consumer-groups.sh \
 ```
 
 ``--describe``选项可以查看消费者的详细信息
+
 ```bash
 docker exec -it <kafka的容器ID/名> kafka-consumer-groups.sh \
 --describe \
@@ -252,6 +271,7 @@ docker exec -it <kafka的容器ID/名> kafka-consumer-groups.sh \
 ```
 
 下面命令用于重置消费进度，例如想重新消费过去 1 小时的数据。(可以理解为回滚？)，重置前应当先停止该组的消费者程序。
+
 ```bash
 docker exec -it kafka kafka-consumer-groups.sh \
 --bootstrap-server localhost:9092 \
@@ -263,9 +283,11 @@ docker exec -it kafka kafka-consumer-groups.sh \
 ```
 
 ### 配置管理
+
 使用``kafka-configs.sh``命令可以对kafka集群的配置进行管理。
 
 ``--alter``选项可以修改Topic的配置，``retention.ms=``为更改Topic 的数据保留时间，单位毫秒。``max.message.bytes``为更改Topic的最大消息大小，单位字节。
+
 ```bash
 docker exec -it kafka kafka-configs.sh \
 --alter \
@@ -283,8 +305,8 @@ docker exec -it kafka kafka-configs.sh --alter \
   --add-config max.message.bytes=10485760
 ```
 
-
 ``--describe``选项可以查看Topic的动态配置信息
+
 ```bash
 docker exec -it kafka kafka-configs.sh \
 --describe \
@@ -294,6 +316,7 @@ docker exec -it kafka kafka-configs.sh \
 ```
 
 ``--delete``选项可以删除Topic的配置
+
 ```bash
 docker exec -it kafka kafka-configs.sh \
 --delete \
@@ -304,6 +327,7 @@ docker exec -it kafka kafka-configs.sh \
 ```
 
 ## 远程集群的连接
+
 想要远程连接到kafka集群，需要在启动kafka容器时，配置``KAFKA_ADVERTISED_LISTENERS``环境变量，指定外部访问的地址和端口。
 按照上面的yml文件大概改成这样
 
@@ -340,4 +364,3 @@ services:
       - KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS=192.168.24.169:9092,192.168.24.169:9093,192.168.24.169:9094
       - KAFKA_CLUSTERS_0_ZOOKEEPER=192.168.24.169:2181
 ```
-
