@@ -95,6 +95,54 @@ vim /etc/my.cnf
 auto-rehash
 ```
 
+## MyCil
+
+mycli 是一个给 MySQL / MariaDB 用的增强型命令行客户端
+相比自带的 mysql，mycli 提供了以下额外功能：
+
+- ✅ 自动补全（库名 / 表名 / 字段名 / 关键字）
+
+- 🎨 语法高亮
+
+- 🧠 历史记录（↑↓可查）
+
+- 🧪 结果表格美化
+
+- ⚡ 对 MySQL / MariaDB 完全兼容
+
+### MyCli安装
+
+Linux可以先尝试使用包管理器安装，我使用Rockey Linux安装时显示包冲突。
+
+```bash
+# Ubuntu/Debian
+sudo apt install bash-completion
+
+# CentOS/RHEL
+sudo yum install bash-completion
+
+#或者使用dnf安装
+dnf install epel-release -y
+dnf install mycli -y
+```
+
+也可以使用pip安装：（windows和linux通用）
+
+```bash
+pip install mycli
+```
+
+使用uv或者pipx安装:
+
+```bash
+#uv安装
+uv install mycli
+#pipx安装
+pipx install mycli
+```
+
+### MyCli使用
+
 ## MySQL使用
 
 ```bash
