@@ -6,6 +6,8 @@ MySQL 是目前世界上最流行的开源关系型数据库管理系统（RDBMS
 
 MySQL1995年由瑞典公司MySQL AB开发，2008年被Sun收购，2010年随Sun被Oracle（甲骨文）收购。MySQL被Oracle收购后，社区因为担心MySQL闭源等原因,2009年由MySQL创始人Michael Widenius主导了MariaDB项目，MariaDB是MySQL的分支版本，完全兼容MySQL，但社区支持更加活跃。
 
+---
+
 ## 安装
 
 这里使用的是Linux发行版为Rocky Linux 9.7。付上MySQL和MariaDB的两个的安装方式。
@@ -55,7 +57,9 @@ systemctl enable mariadb
 systemctl status mariadb
 ```
 
-### 连接数据库
+---
+
+## 连接数据库
 
 我装的是mariaDB，所以下面我用命令就是mariadb命令了。如果是MySQL，把mariadb换成mysql就行。
 
@@ -86,6 +90,10 @@ mariadb -h <主机名或IP地址> -P <端口号> -u <用户名> -p
 mariadb -u root -p --auto-rehash
 ```
 
+---
+
+## 开启自动补全
+
 ### 永久开启补全
 
 ```bash
@@ -94,6 +102,8 @@ vim /etc/my.cnf
 [mysql]
 auto-rehash
 ```
+
+---
 
 ## MyCil
 
@@ -142,6 +152,20 @@ pipx install mycli
 ```
 
 ### MyCli使用
+
+在命令行直接输入``MyCli``即可进入mycli。
+
+```bash
+
+[root@localhost ~]# mycli
+Connecting to socket /var/lib/mysql/mysql.sock, owned by user mysql
+MariaDB 10.5.27
+mycli 1.38.4
+Home: http://mycli.net
+Bug tracker: https://github.com/dbcli/mycli/issues
+Thanks to the contributor - Martijn Engler
+MariaDB root@(none):(none)>
+```
 
 ## MySQL使用
 
