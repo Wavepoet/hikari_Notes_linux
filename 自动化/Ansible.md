@@ -192,16 +192,90 @@ vim /etc/ansible/hosts
 }
 ```
 
+---
+
 ### 配置ssh指纹
+
+在使用Ansible管理设备时，如果目标设备的SSH指纹没有被信任，ssh连接可能会因为安全原因拒绝连接。为了避免这种情况，可以通过修改Ansible的配置文件和hosts文件来禁用SSH指纹检查。在此提供几种方法。
+
+- 修改配置文件 ansible.cfg。**全局禁用SSH指纹检查**：
 
 ```bash
 vim /etc/ansible/ansible.cfg
-
+# 取消注释或添加以下内容
 [defaults]
 host_key_checking = False
 ```
 
+- 修改hosts文件。**针对特定主机禁用SSH指纹检查**：
+
 ```bash
 vim /etc/ansible/hosts
-<ip> ansible_sshcommonargs='-oStrictHostkeychecking=no'
+192.168.1.10 ansible_ssh_common_args='-o StrictHostKeyChecking=no'
 ```
+
+- 使用环境变量。**临时禁用SSH指纹检查**：
+
+```bash
+export ANSIBLE_SSH_COMMON_ARGS="-o StrictHostKeyChecking=no"
+```
+
+除了关闭安全检测外，还可以将指纹录入系统的方式来完成信任，这样会更加安全一些。
+
+默认ssh的指纹存储在``~/.ssh/known_hosts``文件中。``.ssh``文件是隐藏的。使用``ls````ll``查看时要添加``-a``参数。
+
+```bash
+[root@localhost ~]# pwd
+/root
+[root@localhost ~]# ll -a
+……
+drwx------.  2 root root   25  1月  8 21:31 .ssh
+……
+[root@localhost ~]# ll .ssh/
+总用量 4
+-rw-r--r--. 1 root root 192  1月  8 21:37 known_hosts
+[root@localhost ~]# cat .ssh/known_hosts
+192.168.24.167 ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIAPQjrnZ9lQEgPKLqUMzQIsCdJDW6jEJ+pjZc06TRj4J
+192.168.24.166 ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIAPQjrnZ9lQEgPKLqUMzQIsCdJDW6jEJ+pjZc06TRj4J
+[root@localhost ~]#
+
+```
+
+可以使用``ssh-keyscan``命令将目标主机的指纹添加到该文件中。
+
+```bash
+# 扫描单个主机
+ssh-keyscan 192.168.1.10 >> ~/.ssh/known_hosts
+# 批量扫描一个文件内的主机
+ssh-keyscan -f ip_list.txt >> ~/.ssh/known_hosts
+```
+
+当然这么麻烦的事情，一定有大佬看不惯的，所以在Ansible中的``known_hosts``模块可以实现ssh指纹的自动化管理。这里仅提供playbook示例，待学习到playbook章节后再进行详细讲解。
+
+playbook示例：
+
+```playbook
+---
+- name: 自动添加 SSH 指纹
+  hosts: localhost
+  connection: local
+  gather_facts: no
+  vars:
+    target_ip: "192.168.1.50"
+  
+  tasks:
+    - name: 扫描目标主机指纹
+      command: ssh-keyscan {{ target_ip }}
+      register: server_key
+      changed_when: false
+
+    - name: 将指纹添加到 known_hosts
+      known_hosts:
+        path: ~/.ssh/known_hosts
+        name: "{{ target_ip }}"
+        key: "{{ server_key.stdout }}"
+        state: present
+```
+
+---
+
