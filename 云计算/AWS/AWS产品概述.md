@@ -34,8 +34,6 @@ EBS是弹性块存储，为EC2实例提供持久性存储。
 
 完全托管的无服务器键值 (Key-Value) 和文档数据库，能够处理海量并发请求并提供个位数毫秒级响应。
 
-## 分析服务
-
 ## 网络服务
 
 - Amazon CloudFront：
@@ -44,6 +42,18 @@ AWS的CDN服务。
 
 - Amazon VPC (Virtual Private Cloud)：
 
+允许在逻辑隔离的自定义虚拟网络中启动 AWS 资源。
+
 - Elastic Load Balancing (ELB):
 
+自动在多个可用区的目标（如 EC2 实例、容器、IP 地址）之间分配传入的应用程序流量，确保应用的高可用性。
+
 - Amazon Route 53:
+
+高可用且可扩展的云 DNS Web 服务。
+
+## 安全、身份与访问控制
+
+- AWS IAM (Identity and Access Management):
+
+用于精细化控制对 AWS 服务和资源的访问,以用户和组的形式管理权限。每一个用户默认都是没有任何权限的。
