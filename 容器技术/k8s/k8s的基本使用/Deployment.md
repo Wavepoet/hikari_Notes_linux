@@ -86,12 +86,28 @@ spec:
 
 ### 运行
 
+提交YAML文件给k8s
+
 ```bash
-kubectl scale deployment frontend-deployment.yaml --replicas=5 
+kubectl apply -f frontend-service.yaml
 ```
 
 可以使用2 ``kubectl --dry-run``来进行试运行。让系统导出一份标准的YAML文件。
 
 ```bash
 kubectl create deployment my-app --image=nginx:latest --dry-run=client -o yaml > my-app.yaml
+```
+
+### 生命周期
+
+查看所有的 Deployment
+
+```bash
+kubectl get deployment
+```
+
+关闭 Deployment
+
+```bash
+kubectl delete -f frontend-deployment.yaml
 ```
