@@ -89,7 +89,7 @@ spec:
 提交YAML文件给k8s
 
 ```bash
-kubectl apply -f frontend-service.yaml
+kubectl apply -f frontend-deployment.yaml
 ```
 
 可以使用2 ``kubectl --dry-run``来进行试运行。让系统导出一份标准的YAML文件。
