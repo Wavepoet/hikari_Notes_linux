@@ -7,18 +7,91 @@ NetworkPolicy工作在3层（网络）和4层（传输）。
 
 ## Network Policy的策略
 
+Network Polic的运行机制
 Pod默认是非隔离的，即Pod可以接收来自任何来源的流量。将NetworkPolicy应用于Pod后，网络将变成白名单模式，只有允许的流量才能通过。
 
 一个Pod可以使用多个
 
 ### PodSelector（目标 Pod 选择器）
 
+PodSelector定义这个策略应用在哪些Pod上。如果不写，默认应用到当前命名空间下的所有Pod。
+
 ### PolicyTypes（策略类型）
 
-Ingress：入站流量
+Ingress：入站
 
-Egress：出站流量
+Egress：出站
 
 ## Network Polic的运行机制
 
+PodSelector对象存储在etcd当中，由CNI网络插件监听。CNI负责将PodSelector转换为内核规则，更具CNI的不同使用的使用网络工具也不同,例如Calico使用iptables ，eBPF。Cilium使用eBPF.
+
+常见的CNI有：
+
+- Calico
+
+- Cilium
+
+- Weave
+
+```text
+NetworkPolicy YAML
+        ↓
+K8s API Watch
+        ↓
+策略解析（Label Selector）
+        ↓
+对象归约（Pod/IP 集合）
+        ↓
+规则编译（iptables / eBPF）
+        ↓
+注入 Linux 内核
+        ↓
+数据包匹配执行
+```
+
 ## Network Policy的YAML编写
+
+```yaml
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: my-backend-policy
+  namespace: prod             # 1. 策略所在的命名空间
+spec:
+  podSelector:                # 2. 目标 Pod 选择器：这个策略作用于谁？
+    matchLabels:
+      app: backend
+  
+  policyTypes:                # 3. 策略类型：你要控制什么方向的流量？
+  - Ingress
+  - Egress
+
+  ingress:                    # 4a. 入站规则（放行谁来访问我）
+  - from:
+    - namespaceSelector:      # 条件A：来自带有特定标签的命名空间
+        matchLabels:
+          project: myproject
+    - podSelector:            # 条件B：或者来自带有特定标签的 Pod
+        matchLabels:
+          role: frontend
+    - ipBlock:                # 条件C：或者来自特定的 CIDR 网段
+        cidr: 172.17.0.0/16
+        except:
+        - 172.17.1.0/24
+    ports:                    # 放行目标 Pod 的哪些端口？
+    - protocol: TCP
+      port: 6379
+
+  egress:                     # 4b. 出站规则（允许我访问谁）
+  - to:
+    - ipBlock:                # 允许访问特定的外部网段
+        cidr: 10.0.0.0/24
+    ports:
+    - protocol: TCP
+      port: 5978
+```
+
+## 参考：
+
+https://kubernetes.io/zh-cn/docs/concepts/services-networking/network-policies/
