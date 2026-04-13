@@ -2,10 +2,27 @@
 
 大致的每个程序的作用
 
-![8c3b43af122cc001009acb18a0b987e7.png](attachment:7149db5f-77ee-4c20-a399-c3bc912adb0e:8c3b43af122cc001009acb18a0b987e7.png)
+```mermaid
+flowchart TD
+    User((用户))
+    Grafana[Grafana]
+    Prometheus((Prometheus<br>数据提供者))
+    Alertmanager[Alertmanager]
+    Notify[/通知媒介<br>邮件/微信/手机等/]
+    Node1[被监控节点1<br>Node Exporter: 9100]
+    Node2[被监控节点2<br>Node Exporter: 9100]
+
+    Grafana -- 可视化 --> User
+    Grafana -- API Request --> Prometheus
+    Prometheus -- Rules --> Alertmanager
+    Alertmanager -- 告警推送<br>抑制、沉默 --> Notify
+    Notify --> User
+    
+    Prometheus -- 定期主动去node exporter拉取数据 --> Node1
+    Prometheus -- 定期主动去node exporter拉取数据 --> Node2
+```
 
 > 普罗米修斯监控并不难装，但官方仓库和GitHub仓库都在国外，需要科学上网，麻烦，我官网下的包scp上服务器，解压会报错…...，在此用到的OS版本为Rockey Linux 9.4  x86。此教程较为繁琐，但有利于了解安装步骤，方便今后安装及使用
-> 
 
 github：https://github.com/prometheus/
 
@@ -147,11 +164,11 @@ firewall-cmd --reload
 
 登录后点用户（就这头像）—-》点prodfil
 
-![image.png](attachment:26f8005b-076c-4241-be26-cbc2f1e75e85:image.png)
+![image.png](images/image.png)
 
 找到Language就可以改了，记得保存
 
-![image.png](attachment:5eaadf96-8751-4ebf-83ec-67d76b906318:image.png)
+![image2.png](images/image2.png)
 
 官方的汉化不全，但也基本够用了.（官网的汉化也是半中文，半英文，就挺抽象）
 
@@ -159,37 +176,37 @@ firewall-cmd --reload
 
 搜索**Add new connection或**prometheus
 
-![image.png](attachment:011891c0-5d44-470a-a77c-5b9774ed3c60:image.png)
+![image3.png](images/image3.png)
 
 找到prometheus（可搜索），添加连接
 
-![image.png](attachment:dc10c148-c895-49e7-bf5c-b12188cae042:image.png)
+![image4.png](images/image4.png)
 
 回到首页点+ —→new dashboard，当然有表盘可以自己用本地自己的表盘。
 
-![image.png](attachment:131f682f-63ea-456c-843e-a694c53e537a:image.png)
+![image5.png](images/image5.png)
 
 选择prometheus，
 
-![image.png](attachment:232583b5-44f2-4cb9-94a5-3a8782f4beca:image.png)
+![image6.png](images/image6.png)
 
 接下来就开始你的设计了！！！
 
 找到Metric选择你需要的指标
 
-![image.png](attachment:91a0e33b-f4d0-4821-9df5-4a865aab7393:image.png)
+![image7.png](images/image7.png)
 
 找到Kick start yuer query选择查询方式
 
-![image.png](attachment:c9370538-3eea-4125-a031-f0efd0666262:image.png)
+![image8.png](images/image8.png)
 
 点Run qyeries运行查询
 
-![image.png](attachment:585c9721-0915-45df-a46c-a220e94f17c4:image.png)
+![image9.png](images/image9.png)
 
 其他方面就不多赘述了，慢慢摸索，点save dashboard保存
 
-![image.png](attachment:fbd89912-2939-46d6-a275-f3e53b17a021:image.png)
+![image10.png](images/image10.png)
 
 ---
 
